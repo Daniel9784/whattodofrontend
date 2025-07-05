@@ -17,20 +17,25 @@ export default function Settings({
         // Fetch the real user email on mount
         const token = localStorage.getItem('token');
         if (token) {
-            axios.get('/me', {
+            axios.get('/api/user/settings/current-email', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             })
+
+                // Assuming the endpoint returns the current email
             .then(res => {
                 if (res.data && res.data.email) {
+
+                    // Set the current email from the response
                     if (typeof onChangeEmail === 'function') {
                         onChangeEmail(res.data.email);
                     }
                 }
             })
-            .catch(() => {
-                // Optionally handle error
+            .catch((err) => {
+                console.error("Failed to fetch current email:", err);
+                setEmailMsg("Nepodarilo sa načítať aktuálny email, skúste to neskôr.");
             });
         }
     }, []);
