@@ -10,7 +10,7 @@ export default defineConfig({
       '/register': 'http://localhost:8080',
       '/me': 'http://localhost:8080',
       // Prípadne aj všeobecne pre všetky API endpointy
-      // '/api': 'http://localhost:8080'
+       '/api': 'http://localhost:8080'
     }
   }
 })

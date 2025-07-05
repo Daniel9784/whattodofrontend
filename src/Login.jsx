@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Login({ setIsLoggedIn }) {
     const [form, setForm] = useState({ username: "", password: "" });
@@ -12,14 +13,10 @@ export default function Login({ setIsLoggedIn }) {
     const handleSubmit = async e => {
         e.preventDefault();
         try {
-            const res = await fetch("/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form),
-            });
-            const data = await res.json();
+            const res = await axios.post("/login", form);
+            const data = res.data;
 
-            if (res.ok && data.token) {
+            if (res.status === 200 && data.token) {
                 localStorage.setItem("token", data.token);
                 setMessage("Login successful!");
                 setIsLoggedIn(true);          // ← nastavenie stavu v App.jsx
@@ -28,8 +25,8 @@ export default function Login({ setIsLoggedIn }) {
                 setMessage(data.error || "Login failed");
             }
         } catch (error) {
-            console.error(error)
-            setMessage("Network error");
+            console.error(error);
+            setMessage(error.response?.data?.error || "Network error");
         }
     };
 
