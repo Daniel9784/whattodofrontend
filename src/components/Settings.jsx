@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import axios from "axios";
 
@@ -12,6 +13,7 @@ export default function Settings({
     const [emailMsg, setEmailMsg] = useState('');
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
     const [passwordMsg, setPasswordMsg] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Fetch the real user email on mount
@@ -58,6 +60,10 @@ export default function Settings({
             setEmailMsg(res.data.message || "Email address changed successfully!");
             if (onChangeEmail) onChangeEmail(emailForm.newEmail);
             setEmailForm({ newEmail: '', currentPassword: '' });
+
+            localStorage.removeItem('token');
+            navigate('/login');
+
         } catch (error) {
             setEmailMsg(error.response?.data?.error || "Failed to change email address.");
         }
@@ -95,6 +101,10 @@ export default function Settings({
             setPasswordMsg(res.data.message || "Password changed successfully!");
             setPasswords({ current: '', new: '', confirm: '' });
             if (onChangePassword) onChangePassword();
+
+            localStorage.removeItem('token');
+            navigate('/login');
+
         } catch (error) {
             setPasswordMsg(error.response?.data?.error || "Failed to change password.");
         }
