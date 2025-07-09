@@ -49,7 +49,7 @@ export default function Settings({
         setEmailMsg("");
         try {
             const res = await api.post(
-                "/change-email",
+                "/settings/change-email",
                 {
                     newEmail: emailForm.newEmail,
                     currentPassword: emailForm.currentPassword
@@ -85,7 +85,7 @@ export default function Settings({
                 confirmNewPassword: passwords.confirm
             });
             const res = await api.post(
-                "/change-password",
+                "/settings/change-password",
                 {
                     currentPassword: passwords.current,
                     newPassword: passwords.new,
