@@ -10,7 +10,7 @@ export default function AddNote() {
         e.preventDefault();
         setMessage('');
         try {
-            await api.post("/notes", { category, content });
+            await api.post("/add-note", { category, content });
             setMessage("Poznámka bola úspešne pridaná.");
             setCategory('');
             setContent('');
