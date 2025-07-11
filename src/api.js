@@ -1,10 +1,11 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "/api/user",
+    baseURL: "/api",
 });
 
-// Add a request interceptor to attach the token
+
+// Add token to every request if available
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");
@@ -16,5 +17,20 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-export default api;
+// Handle 401 Unauthorized responses
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem("token");
 
+            // Redirect to login page
+            if (window.location.pathname !== "/login") {
+                window.location.href = "/login";
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
+export default api;

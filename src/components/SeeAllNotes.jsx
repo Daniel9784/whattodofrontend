@@ -21,7 +21,7 @@ export default function SeeAllNotes() {
 
     const fetchNotes = async () => {
         try {
-            const res = await api.get('/show-notes');
+            const res = await api.get('/user/show-notes');
             setNotes(res.data);
 
             const cats = Array.from(new Set(res.data.map(note => note.category))).filter(c => c);

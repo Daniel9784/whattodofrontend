@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
-import axios from "axios";
+
 
 export default function Settings({
     currentEmail,
@@ -16,31 +16,20 @@ export default function Settings({
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch the real user email on mount
-        const token = localStorage.getItem('token');
-        if (token) {
-            axios.get('/api/user/settings/current-email', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            })
-
-                // Assuming the endpoint returns the current email
+        api.get('/user/settings/current-email')
             .then(res => {
                 if (res.data && res.data.email) {
-
-                    // Set the current email from the response
                     if (typeof onChangeEmail === 'function') {
                         onChangeEmail(res.data.email);
                     }
                 }
             })
-            .catch((err) => {
+            .catch(err => {
                 console.error("Failed to fetch current email:", err);
                 setEmailMsg("Nepodarilo sa načítať aktuálny email, skúste to neskôr.");
             });
-        }
     }, []);
+
 
     const handleEmailFormChange = (e) => {
         setEmailForm({ ...emailForm, [e.target.name]: e.target.value });
@@ -51,7 +40,7 @@ export default function Settings({
         setEmailMsg("");
         try {
             const res = await api.post(
-                "/settings/change-email",
+                "/user/settings/change-email",
                 {
                     newEmail: emailForm.newEmail,
                     currentPassword: emailForm.currentPassword
@@ -91,7 +80,7 @@ export default function Settings({
                 confirmNewPassword: passwords.confirm
             });
             const res = await api.post(
-                "/settings/change-password",
+                "/user/settings/change-password",
                 {
                     currentPassword: passwords.current,
                     newPassword: passwords.new,

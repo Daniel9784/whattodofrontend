@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-export default function Login({ setIsLoggedIn }) {
+export default function Login() {
     const [form, setForm] = useState({ username: "", password: "" });
     const [message, setMessage] = useState("");
     const navigate = useNavigate();
@@ -19,8 +19,7 @@ export default function Login({ setIsLoggedIn }) {
             if (res.status === 200 && data.token) {
                 localStorage.setItem("token", data.token);
                 setMessage("Login successful!");
-                setIsLoggedIn(true);          // ← nastavenie stavu v App.jsx
-                navigate("/dashboard");       // ← presmerovanie
+                navigate("/dashboard");
             } else {
                 setMessage(data.error || "Login failed");
             }

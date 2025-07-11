@@ -5,6 +5,7 @@ import AddNote from './components/AddNote';
 import SeeAllNotes from './components/SeeAllNotes';
 import Calendar from './components/Calendar';
 import Settings from './components/Settings';
+import api from './api';
 
 
 export default function Dashboard() {
@@ -13,10 +14,16 @@ export default function Dashboard() {
     const [currentEmail, setCurrentEmail] = useState('');
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            navigate('/');
-        }
+        const checkAuth = async () => {
+            try {
+                await api.get('/me');
+            } catch (error) {
+                console.error('Authentication check failed:', error);
+                localStorage.removeItem('token');
+                navigate('/login');
+            }
+        };
+        checkAuth();
     }, [navigate]);
 
     const handleLogout = () => {
