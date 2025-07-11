@@ -3,6 +3,7 @@ import Home from './Home.jsx';
 import Login from './Login.jsx';
 import Register from './Register.jsx';
 import Dashboard from './Dashboard.jsx';
+import {ProtectedRoute} from "./components/ProtectedRoute.jsx";
 
 function App() {
     return (
@@ -16,7 +17,7 @@ function App() {
                 <Route path="/register" element={<Register />} />
 
                 {/* Protected page */}
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard" element={<ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
 
                 {/* Redirect unknown routes */}
                 <Route path="*" element={<Navigate to="/" />} />
