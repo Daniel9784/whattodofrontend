@@ -6,9 +6,18 @@ export default function SeeAllNotes() {
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('ALL');
     const [filteredNotes, setFilteredNotes] = useState([]);
+    const [editingNote, setEditingNote] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [form, setForm] = useState({
+        content: '',
+        category: '',
+        dueDate: '',
+        dueTime: ''
+    });
 
     useEffect(() => {
         fetchNotes();
+        fetchCategories();
     }, []);
 
     useEffect(() => {
@@ -23,11 +32,62 @@ export default function SeeAllNotes() {
         try {
             const res = await api.get('/user/show-notes');
             setNotes(res.data);
-
-            const cats = Array.from(new Set(res.data.map(note => note.category))).filter(c => c);
-            setCategories(cats);
         } catch (err) {
             console.error('Chyba pri načítaní poznámok:', err);
+        }
+    };
+
+    const fetchCategories = async () => {
+        try {
+            const res = await api.get('/user/categories');
+            setCategories(res.data);
+        } catch (err) {
+            console.error('Chyba pri načítaní kategórií:', err);
+        }
+    };
+
+    const openEditModal = (note) => {
+        setEditingNote(note);
+        setForm({
+            content: note.content || '',
+            category: note.category || '',
+            dueDate: note.dueDate || '',
+            dueTime: note.dueTime || ''
+        });
+        setModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setModalOpen(false);
+        setEditingNote(null);
+    };
+
+    const handleFormChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const handleEdit = async (e) => {
+        e.preventDefault();
+        try {
+            await api.put(`/user/edit-note/${editingNote.id}`, form);
+            setNotes(notes.map(note =>
+                note.id === editingNote.id ? { ...note, ...form } : note
+            ));
+            closeModal();
+        } catch (error) {
+            console.error("Failed to edit note", error);
+            alert('Zlyhala zmena poznamky.');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this note?")) return;
+        try {
+            await api.delete(`/user/delete-note/${id}`);
+            setNotes(notes.filter(note => note.id !== id));
+        } catch (error) {
+            console.error("Failed to delete note", error);
+            alert("Zlyhalo zmazanie poznamky.");
         }
     };
 
@@ -40,7 +100,6 @@ export default function SeeAllNotes() {
 
     return (
         <div style={{ display: 'flex', maxWidth: 1200, margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
-            {/* Ľavý stĺpec - kategórie */}
             <div style={{
                 width: '25%',
                 borderRight: '1px solid #ccc',
@@ -65,8 +124,6 @@ export default function SeeAllNotes() {
                             transition: 'background-color 0.2s',
                         }}
                         onClick={() => setSelectedCategory('ALL')}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = selectedCategory !== 'ALL' ? '#f5f5f5' : '#e0e0e0'}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = selectedCategory === 'ALL' ? '#e0e0e0' : 'transparent'}
                     >
                         ALL
                     </li>
@@ -84,35 +141,26 @@ export default function SeeAllNotes() {
                                 transition: 'background-color 0.2s',
                             }}
                             onClick={() => setSelectedCategory(category)}
-                            onMouseEnter={e => e.currentTarget.style.backgroundColor = selectedCategory !== category ? '#f5f5f5' : '#e0e0e0'}
-                            onMouseLeave={e => e.currentTarget.style.backgroundColor = selectedCategory === category ? '#e0e0e0' : 'transparent'}
                         >
                             {category}
                         </li>
                     ))}
                 </ul>
             </div>
-
-            {/* Pravý stĺpec - poznámky v tabuľke */}
             <div style={{ width: '75%', padding: 10 }}>
                 {filteredNotes.length === 0 ? (
                     <p>Žiadne poznámky v tejto kategórii.</p>
                 ) : (
-                    <table
-                        style={{
-                            width: '100%',
-                            borderCollapse: 'collapse',
-                            tableLayout: 'fixed',
-                        }}
-                    >
+                    <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
                         <thead>
                         <tr style={{ backgroundColor: '#f2f2f2' }}>
                             {showCategoryColumn && (
-                                <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'left' }}>Kategória</th>
+                                <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'center' }}>Kategória</th>
                             )}
-                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'left' }}>Obsah</th>
-                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'left' }}>Dátum pridania</th>
-                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'left' }}>Dátum splnenia</th>
+                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'center' }}>Obsah</th>
+                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'center' }}>Dátum pridania</th>
+                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'center' }}>Dátum splnenia</th>
+                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'center', width: 180 }}>Actions</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -123,16 +171,14 @@ export default function SeeAllNotes() {
                                         {note.category || 'Bez kategórie'}
                                     </td>
                                 )}
-                                <td
-                                    style={{
-                                        border: '1px solid #ddd',
-                                        padding: 8,
-                                        maxWidth: 400,
-                                        whiteSpace: 'normal',
-                                        wordWrap: 'break-word',
-                                        overflowWrap: 'break-word',
-                                    }}
-                                >
+                                <td style={{
+                                    border: '1px solid #ddd',
+                                    padding: 8,
+                                    maxWidth: 400,
+                                    whiteSpace: 'normal',
+                                    wordWrap: 'break-word',
+                                    overflowWrap: 'break-word',
+                                }}>
                                     {note.content}
                                 </td>
                                 <td style={{ border: '1px solid #ddd', padding: 8, whiteSpace: 'normal' }}>
@@ -140,10 +186,23 @@ export default function SeeAllNotes() {
                                 </td>
                                 <td style={{ border: '1px solid #ddd', padding: 8, whiteSpace: 'normal' }}>
                                     {note.dueDate
-                                        ? (note.dueTime
-                                            ? `${note.dueDate} ${note.dueTime.slice(0,5)}`
-                                            : note.dueDate)
+                                        ? formatDate(note.dueTime ? `${note.dueDate}T${note.dueTime}` : note.dueDate)
                                         : '—'}
+                                </td>
+                                <td style={{ border: '1px solid #ddd', padding: 8 }}>
+                                    <button
+                                        style={{ marginRight: 8 }}
+                                        className="btn btn-sm btn-primary"
+                                        onClick={() => openEditModal(note)}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="btn btn-sm btn-danger"
+                                        onClick={() => handleDelete(note.id)}
+                                    >
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -151,6 +210,69 @@ export default function SeeAllNotes() {
                     </table>
                 )}
             </div>
+            {modalOpen && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                    background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                }}>
+                    <div style={{
+                        background: '#fff', padding: 24, borderRadius: 8, minWidth: 400, boxShadow: '0 2px 16px rgba(0,0,0,0.2)'
+                    }}>
+                        <h3>Edit Note</h3>
+                        <form onSubmit={handleEdit}>
+                            <div style={{ marginBottom: 12 }}>
+                                <label>Content:</label>
+                                <input
+                                    type="text"
+                                    name="content"
+                                    value={form.content}
+                                    onChange={handleFormChange}
+                                    style={{ width: '100%' }}
+                                    required
+                                />
+                            </div>
+                            <div style={{ marginBottom: 12 }}>
+                                <label>Category:</label>
+                                <select
+                                    name="category"
+                                    value={form.category}
+                                    onChange={handleFormChange}
+                                    style={{ width: '100%' }}
+                                >
+                                    <option value="">-- Vyber kategóriu --</option>
+                                    {categories.map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div style={{ marginBottom: 12 }}>
+                                <label>Due Date:</label>
+                                <input
+                                    type="date"
+                                    name="dueDate"
+                                    value={form.dueDate}
+                                    onChange={handleFormChange}
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: 12 }}>
+                                <label>Due Time:</label>
+                                <input
+                                    type="time"
+                                    name="dueTime"
+                                    value={form.dueTime}
+                                    onChange={handleFormChange}
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <button type="button" onClick={closeModal} style={{ marginRight: 8 }}>Cancel</button>
+                                <button type="submit" className="btn btn-success">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
