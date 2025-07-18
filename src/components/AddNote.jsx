@@ -96,19 +96,35 @@ export default function AddNote() {
 
     const handleSaveEditCategory = async () => {
         const oldName = categories[editCatIdx];
-        if (editCatValue && !categories.includes(editCatValue)) {
-            try {
-                await api.put(`/user/categories/${encodeURIComponent(oldName)}`, { name: editCatValue });
-                if (category === oldName) setCategory(editCatValue);
-                setEditCatIdx(null);
-                setEditCatValue('');
-                fetchCategories();
-            } catch (error) {
-                console.error("Rename category error:", error);
-                alert('Nepodarilo sa premenovať kategóriu.');
-            }
+
+        if (!editCatValue || categories.includes(editCatValue)) return;
+
+        const confirmed = window.confirm(
+            `Chceš zmeniť názov kategórie aj vo všetkých poznámkach s kategóriou "${oldName}"?`
+        );
+
+        if (!confirmed) {
+            // Ak používateľ nepotevrdí, skončíme a nevoláme API
+            return;
+        }
+
+        try {
+            await api.put(`/user/categories/${encodeURIComponent(oldName)}`, {
+                name: editCatValue,
+                renameInNotes: true  // vieme že confirmed je true
+            });
+
+            if (category === oldName) setCategory(editCatValue);
+            setEditCatIdx(null);
+            setEditCatValue('');
+            fetchCategories();
+        } catch (error) {
+            console.error("Rename category error:", error);
+            alert('Nepodarilo sa premenovať kategóriu.');
         }
     };
+
+
 
     return (
         <div>
