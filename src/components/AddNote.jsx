@@ -49,15 +49,31 @@ export default function AddNote() {
 
     // Category management handlers (all use backend)
     const handleAddCategory = async () => {
-        if (newCat && !categories.includes(newCat)) {
-            try {
-                await api.post('/user/categories', { name: newCat });
-                setNewCat('');
-                fetchCategories();
-            } catch (error) {
-                console.error("Add category error:", error);
-                alert('Nepodarilo sa pridať kategóriu.');
+        if (!newCat.trim()) return;
+
+
+        if (categories.includes(newCat)) {
+            alert("Kategória už existuje.");
+            return;
+        }
+
+        try {
+            await api.post('/user/categories', { name: newCat });
+            setNewCat('');
+            fetchCategories();
+        } catch (error) {
+            const status = error.response?.status;
+            const message = error.response?.data;
+
+            if (status === 409) {
+                alert(`⚠️ ${message}`); // napr. "Category already exists"
+            } else if (status === 403) {
+                alert("❌ Nemáš oprávnenie pridať kategóriu.");
+            } else {
+                alert("❌ Nepodarilo sa pridať kategóriu.");
             }
+
+            console.error("Add category error:", error);
         }
     };
 
@@ -181,6 +197,7 @@ export default function AddNote() {
                                         <>
                                             <input
                                                 value={editCatValue}
+                                                maxLength={10}
                                                 onChange={e => setEditCatValue(e.target.value)}
                                                 style={{ flex: 1, marginRight: 8 }}
                                             />
@@ -203,6 +220,7 @@ export default function AddNote() {
                                 className="form-control"
                                 placeholder="Nová kategória"
                                 value={newCat}
+                                maxLength={10}
                                 onChange={e => setNewCat(e.target.value)}
                                 style={{ marginRight: 8 }}
                             />

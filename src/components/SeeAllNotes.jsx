@@ -8,6 +8,7 @@ export default function SeeAllNotes() {
     const [filteredNotes, setFilteredNotes] = useState([]);
     const [editingNote, setEditingNote] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [expandedNotes, setExpandedNotes] = useState([]);
     const [form, setForm] = useState({
         content: '',
         category: '',
@@ -96,6 +97,15 @@ export default function SeeAllNotes() {
         return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
     };
 
+    const toggleExpand = (noteId) => {
+        setExpandedNotes((prevExpanded) =>
+            prevExpanded.includes(noteId)
+                ? prevExpanded.filter(id => id !== noteId)
+                : [...prevExpanded, noteId]
+        );
+    };
+
+
     const showCategoryColumn = selectedCategory === 'ALL';
 
     return (
@@ -151,48 +161,122 @@ export default function SeeAllNotes() {
                 {filteredNotes.length === 0 ? (
                     <p>Žiadne poznámky v tejto kategórii.</p>
                 ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                         <thead>
                         <tr style={{ backgroundColor: '#f2f2f2' }}>
                             {showCategoryColumn && (
-                                <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'center' }}>Kategória</th>
+                                <th style={{
+                                    border: '1px solid #ddd',
+                                    padding: 8,
+                                    textAlign: 'center',
+                                    whiteSpace: 'nowrap',
+                                    width: '110px'
+                                }}>
+                                    Kategória
+                                </th>
                             )}
-                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'center' }}>Obsah</th>
-                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'center' }}>Dátum pridania</th>
-                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'center' }}>Dátum splnenia</th>
-                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'center', width: 180 }}>Actions</th>
+                            <th style={{
+                                border: '1px solid #ddd',
+                                padding: 8,
+                                textAlign: 'left',
+                                wordWrap: 'break-word',
+                                overflowWrap: 'break-word',
+                                whiteSpace: 'pre-wrap',
+                                width: '45%'
+                            }}>
+                                Obsah
+                            </th>
+                            <th style={{
+                                border: '1px solid #ddd',
+                                padding: 8,
+                                textAlign: 'center',
+                                whiteSpace: 'nowrap',
+                                width: '180px'
+                            }}>
+                                Dátum pridania
+                            </th>
+                            <th style={{
+                                border: '1px solid #ddd',
+                                padding: 8,
+                                textAlign: 'center',
+                                whiteSpace: 'nowrap',
+                                width: '180px'
+                            }}>
+                                Dátum splnenia
+                            </th>
+                            <th style={{
+                                border: '1px solid #ddd',
+                                padding: 8,
+                                textAlign: 'center',
+                                whiteSpace: 'nowrap',
+                                width: '160px'
+                            }}>
+                                Actions
+                            </th>
                         </tr>
                         </thead>
                         <tbody>
                         {filteredNotes.map(note => (
                             <tr key={note.id}>
                                 {showCategoryColumn && (
-                                    <td style={{ border: '1px solid #ddd', padding: 8, whiteSpace: 'normal' }}>
+                                    <td style={{
+                                        border: '1px solid #ddd',
+                                        padding: 8,
+                                        textAlign: 'center',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}>
                                         {note.category || 'Bez kategórie'}
                                     </td>
                                 )}
+                                <td
+                                    style={{
+                                        border: '1px solid #ddd',
+                                        padding: 8,
+                                        whiteSpace: 'pre-wrap',
+                                        wordWrap: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        cursor: note.content.length > 15 ? 'pointer' : 'default',
+                                    }}
+                                    onClick={() => {
+                                        if (note.content.length > 15) {
+                                            toggleExpand(note.id);
+                                        }
+                                    }}
+                                    title={note.content.length > 15 ? "Klikni pre zobrazenie celého textu" : ""}
+                                >
+                                    {note.content.length > 15 && !expandedNotes.includes(note.id)
+                                        ? note.content.slice(0, 15) + "..."
+                                        : note.content}
+                                </td>
+
                                 <td style={{
                                     border: '1px solid #ddd',
                                     padding: 8,
-                                    maxWidth: 400,
-                                    whiteSpace: 'normal',
-                                    wordWrap: 'break-word',
-                                    overflowWrap: 'break-word',
+                                    textAlign: 'center',
+                                    whiteSpace: 'nowrap'
                                 }}>
-                                    {note.content}
-                                </td>
-                                <td style={{ border: '1px solid #ddd', padding: 8, whiteSpace: 'normal' }}>
                                     {formatDate(note.createdAt)}
                                 </td>
-                                <td style={{ border: '1px solid #ddd', padding: 8, whiteSpace: 'normal' }}>
+                                <td style={{
+                                    border: '1px solid #ddd',
+                                    padding: 8,
+                                    textAlign: 'center',
+                                    whiteSpace: 'nowrap'
+                                }}>
                                     {note.dueDate
                                         ? formatDate(note.dueTime ? `${note.dueDate}T${note.dueTime}` : note.dueDate)
                                         : '—'}
                                 </td>
-                                <td style={{ border: '1px solid #ddd', padding: 8 }}>
+                                <td style={{
+                                    border: '1px solid #ddd',
+                                    padding: 8,
+                                    textAlign: 'center',
+                                    whiteSpace: 'nowrap'
+                                }}>
                                     <button
-                                        style={{ marginRight: 8 }}
-                                        className="btn btn-sm btn-primary"
+                                        className="btn btn-sm btn-primary me-2"
                                         onClick={() => openEditModal(note)}
                                     >
                                         Edit
@@ -208,6 +292,7 @@ export default function SeeAllNotes() {
                         ))}
                         </tbody>
                     </table>
+
                 )}
             </div>
             {modalOpen && (
@@ -239,7 +324,7 @@ export default function SeeAllNotes() {
                                     onChange={handleFormChange}
                                     style={{ width: '100%' }}
                                 >
-                                    <option value="">-- Vyber kategóriu --</option>
+                                    <option value="" disabled hidden>-- Vyber kategóriu --</option>
                                     {categories.map(cat => (
                                         <option key={cat} value={cat}>{cat}</option>
                                     ))}
