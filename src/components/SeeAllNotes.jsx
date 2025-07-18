@@ -94,7 +94,7 @@ export default function SeeAllNotes() {
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
     };
 
     const toggleExpand = (noteId) => {
@@ -265,10 +265,15 @@ export default function SeeAllNotes() {
                                     textAlign: 'center',
                                     whiteSpace: 'nowrap'
                                 }}>
-                                    {note.dueDate
-                                        ? formatDate(note.dueTime ? `${note.dueDate}T${note.dueTime}` : note.dueDate)
-                                        : '—'}
-                                </td>
+                                    {note.dueDate && note.dueDate.trim() !== ''
+                                        ? (note.dueTime && note.dueTime.trim() !== ''
+                                        ? formatDate(`${note.dueDate}T${note.dueTime}`)
+                                        : new Date(note.dueDate).toLocaleDateString())
+                                        : (note.dueTime && note.dueTime.trim() !== ''
+                                        ? note.dueTime
+                                        : '—')}
+
+                                        </td>
                                 <td style={{
                                     border: '1px solid #ddd',
                                     padding: 8,
