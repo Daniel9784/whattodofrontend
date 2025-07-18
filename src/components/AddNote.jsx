@@ -79,8 +79,15 @@ export default function AddNote() {
 
     const handleDeleteCategory = async (idx) => {
         const catName = categories[idx];
+
+        const confirmed = window.confirm(
+            `⚠️ Zmazaním kategórie "${catName}" sa zmažú aj všetky poznámky v nej. Chceš pokračovať?`
+        );
+
+        if (!confirmed) return;
+
         try {
-            await api.delete(`/user/categories/${encodeURIComponent(catName)}`);
+            await api.delete(`/user/categories/${encodeURIComponent(catName)}?deleteNotes=true`);
             if (category === catName) setCategory('');
             fetchCategories();
         } catch (error) {
@@ -88,6 +95,8 @@ export default function AddNote() {
             alert('Nepodarilo sa zmazať kategóriu.');
         }
     };
+
+
 
     const handleEditCategory = (idx) => {
         setEditCatIdx(idx);
