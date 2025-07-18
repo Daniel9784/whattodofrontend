@@ -4,16 +4,25 @@ import api from '../api';
 export default function AddNote() {
     const [category, setCategory] = useState('');
     const [content, setContent] = useState('');
+    const [dueDateDate, setDueDateDate] = useState('');
+    const [dueDateTime, setDueDateTime] = useState('');
     const [message, setMessage] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage('');
         try {
-            await api.post("/user/add-note", { category, content });
+            await api.post("/user/add-note", {
+                category,
+                content,
+                dueDate: dueDateDate,
+                dueTime: dueDateTime
+            });
             setMessage("Poznámka bola úspešne pridaná.");
             setCategory('');
             setContent('');
+            setDueDateDate('');
+            setDueDateTime('');
         } catch (error) {
             console.error("Add note error:", error);
             setMessage(error.response?.data?.error || "Nepodarilo sa pridať poznámku.");
@@ -50,6 +59,25 @@ export default function AddNote() {
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                                 required
+                            />
+                        </div>
+
+                        <div className="mb-3">
+                            <label className="form-label">Dátum splnenia</label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={dueDateDate}
+                                onChange={(e) => setDueDateDate(e.target.value)}
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Čas splnenia</label>
+                            <input
+                                type="time"
+                                className="form-control"
+                                value={dueDateTime}
+                                onChange={(e) => setDueDateTime(e.target.value)}
                             />
                         </div>
 

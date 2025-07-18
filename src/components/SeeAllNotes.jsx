@@ -39,7 +39,7 @@ export default function SeeAllNotes() {
     const showCategoryColumn = selectedCategory === 'ALL';
 
     return (
-        <div style={{ display: 'flex', maxWidth: 900, margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
+        <div style={{ display: 'flex', maxWidth: 1200, margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
             {/* Ľavý stĺpec - kategórie */}
             <div style={{
                 width: '25%',
@@ -111,7 +111,8 @@ export default function SeeAllNotes() {
                                 <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'left' }}>Kategória</th>
                             )}
                             <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'left' }}>Obsah</th>
-                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'left' }}>Dátum</th>
+                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'left' }}>Dátum pridania</th>
+                            <th style={{ border: '1px solid #ddd', padding: 8, textAlign: 'left' }}>Dátum splnenia</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -136,6 +137,13 @@ export default function SeeAllNotes() {
                                 </td>
                                 <td style={{ border: '1px solid #ddd', padding: 8, whiteSpace: 'normal' }}>
                                     {formatDate(note.createdAt)}
+                                </td>
+                                <td style={{ border: '1px solid #ddd', padding: 8, whiteSpace: 'normal' }}>
+                                    {note.dueDate
+                                        ? (note.dueTime
+                                            ? `${note.dueDate} ${note.dueTime.slice(0,5)}`
+                                            : note.dueDate)
+                                        : '—'}
                                 </td>
                             </tr>
                         ))}
